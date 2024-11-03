@@ -1,0 +1,51 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Exporter",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "otel_demo.exporter",
+            "env": {
+                "APP_PORT": "14317",
+                "APP_DB": "postgres:postgres@localhost:5432/postgres"
+            }
+        },
+        {
+            "name": "Producer",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "otel_demo.apps",
+            "args": ["producer"],
+            "env": {
+                "OTEL_SERVICE_NAME": "producer",
+            },
+            "envFile": "${workspaceFolder}/local.env"
+        },
+        {
+            "name": "Propagator",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "otel_demo.apps",
+            "args": ["propagator"],
+            "env": {
+                "OTEL_SERVICE_NAME": "propagator",
+            },
+            "envFile": "${workspaceFolder}/local.env"
+        },
+        {
+            "name": "Client",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "otel_demo.apps",
+            "args": ["client"],
+            "env": {
+                "OTEL_SERVICE_NAME": "client",
+            },
+            "envFile": "${workspaceFolder}/local.env"
+        }
+    ]
+}

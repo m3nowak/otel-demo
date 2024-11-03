@@ -1,0 +1,77 @@
+logging {
+  level  = "info"
+  format = "logfmt"
+}
+otelcol.receiver.otlp "example" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    metrics = [otelcol.processor.filter.deadend.input]
+    logs    = [otelcol.processor.batch.main.input, otelcol.processor.batch.cloud.input]
+    traces  = [otelcol.processor.batch.main.input, otelcol.processor.batch.cloud.input]
+  }
+}
+
+otelcol.processor.filter "deadend" {
+  error_mode = "ignore"
+
+  metrics {
+    metric = [
+      "name != \"metric_not_to_drop\"",
+    ]
+  }
+  logs {
+    log_record = [
+      "IsMatch(body, \".*\")",
+    ]
+  }
+
+  output {
+    logs = [otelcol.processor.batch.main.input]
+  }
+}
+
+otelcol.processor.batch "main" {
+  output {
+    traces  = [otelcol.exporter.otlp.default.input]
+    logs    = [otelcol.exporter.otlp.default.input]
+  }
+}
+
+otelcol.processor.batch "cloud" {
+  output {
+    traces  = [otelcol.exporter.otlphttp.cloud.input]
+    logs    = [otelcol.exporter.otlphttp.cloud.input]
+  }
+}
+
+otelcol.exporter.otlp "default" {
+  client {
+    endpoint = "localhost:14317"
+    tls {
+      insecure = true
+    }
+  }
+}
+
+otelcol.auth.basic "cloud" {
+  username = sys.env("GRAFANA_CLOUD_USER_KEY")
+  password = sys.env("GRAFANA_CLOUD_API_KEY")
+}
+
+otelcol.exporter.otlphttp "cloud" {
+  client {
+    endpoint = "https://otlp-gateway-prod-eu-west-2.grafana.net/otlp"
+    auth     = otelcol.auth.basic.cloud.handler
+  }
+}
+
+livedebugging {
+  enabled = true
+}
